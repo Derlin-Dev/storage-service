@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
@@ -65,7 +66,7 @@ public class StorageController {
         UUID userId = (UUID) servletRequest.getAttribute("userId");
         UUID fileId = UUID.fromString(id);
 
-        DownloadResponse downloadResponse = fileService.downloadFile(fileId);
+        DownloadResponse downloadResponse = fileService.downloadFile(fileId, userId);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(
                 new ApiResponse<>(
@@ -73,5 +74,81 @@ public class StorageController {
                         "Archivos encontrados",
                         downloadResponse
                 ));
+    }
+
+    @PutMapping("/{id}/confirm-upload")
+    public ResponseEntity<?> confirmUploadFile(
+            @PathVariable String id,
+            HttpServletRequest servletRequest
+    ){
+        UUID userId = (UUID) servletRequest.getAttribute("userId");
+        UUID fileId = UUID.fromString(id);
+
+        fileService.confirmUploadFile(fileId, userId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+                new ApiResponse<>(
+                        true,
+                        "Estatus actualizado",
+                        null
+                ));
+    }
+
+    @DeleteMapping("/{id}/delete")
+    public ResponseEntity<?> deleteFile(
+            @PathVariable String id,
+            HttpServletRequest servletRequest
+    ){
+        UUID userId = (UUID) servletRequest.getAttribute("userId");
+        UUID fileId = UUID.fromString(id);
+
+        fileService.deleteFile(fileId, userId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+                new ApiResponse<>(
+                        true,
+                        "Archivo eliminado correctamente",
+                        null
+                ));
+    }
+
+    @PutMapping("{id}/update-permission")
+    public ResponseEntity<?> updatePermissionPublic(
+            @PathVariable String id,
+            HttpServletRequest servletRequest
+    ){
+        UUID userId = (UUID) servletRequest.getAttribute("userId");
+        UUID fileId = UUID.fromString(id);
+
+        fileService.updateVisibilityPublicFile(fileId, userId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+                new ApiResponse<>(
+                        true,
+                        "Visibilidad del documento actualizada",
+                        null
+                ));
+    }
+
+    @GetMapping("/{id}/get-sharelink")
+    public ResponseEntity<?> getShareLink(
+            @PathVariable String id,
+            HttpServletRequest servletRequest
+    ){
+        UUID userId = (UUID) servletRequest.getAttribute("userId");
+        UUID fileId = UUID.fromString(id);
+
+        String url = fileService.getShareLink(fileId, userId);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+                new ApiResponse<>(
+                        true,
+                        "Visibilidad del documento actualizada",
+                        url
+                ));
+    }
+
+    @GetMapping("/share/{token}")
+    public ResponseEntity<?> downloadSharedFile(@PathVariable String token){
+        return ResponseEntity.status(HttpStatus.FOUND)
+                .location(URI.create(fileService.downloadFilePublic(token)))
+                .build();
     }
 }

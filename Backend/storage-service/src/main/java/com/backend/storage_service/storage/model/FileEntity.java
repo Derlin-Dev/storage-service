@@ -45,6 +45,13 @@ public class FileEntity {
     @Column(nullable = false)
     private FileStatus status;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private FileVisibility visibility = FileVisibility.PRIVATE;
+
+    @Column(unique = true)
+    private String shareToken;
+
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime createdAt;

@@ -2,18 +2,23 @@ package com.backend.storage_service.storage.service;
 
 import com.backend.storage_service.auth.model.UserEntity;
 import com.backend.storage_service.auth.repository.UserRepository;
+import com.backend.storage_service.exception.ForbiddenException;
 import com.backend.storage_service.exception.ResourceNotFoundException;
+import com.backend.storage_service.exception.UnauthorizedException;
 import com.backend.storage_service.storage.dto.DownloadResponse;
 import com.backend.storage_service.storage.dto.FilesResponse;
 import com.backend.storage_service.storage.dto.UploadRequest;
 import com.backend.storage_service.storage.dto.UploadResponse;
 import com.backend.storage_service.storage.model.FileEntity;
 import com.backend.storage_service.storage.model.FileStatus;
+import com.backend.storage_service.storage.model.FileVisibility;
 import com.backend.storage_service.storage.repository.StorageRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -27,11 +32,13 @@ public class FileService {
     private final StorageRepository storageRepository;
     private final UserRepository userRepository;
     private final S3StorageProvider s3StorageProvider;
+    private final FilePermissionService filePermissionService;
 
-    public FileService(StorageRepository storageRepository, UserRepository userRepository, S3StorageProvider s3StorageProvider) {
+    public FileService(StorageRepository storageRepository, UserRepository userRepository, S3StorageProvider s3StorageProvider, FilePermissionService filePermissionService) {
         this.storageRepository = storageRepository;
         this.userRepository = userRepository;
         this.s3StorageProvider = s3StorageProvider;
+        this.filePermissionService = filePermissionService;
     }
 
     public List<FilesResponse> getAllFilesByUser(UUID userid)throws ResourceNotFoundException{
@@ -40,7 +47,15 @@ public class FileService {
         if (listFiles.isEmpty()) {
             throw new ResourceNotFoundException("Ningun documento encontrado");
         }
-        return listFiles.stream()
+
+        List<FileEntity> files = new ArrayList<>();
+
+        for(FileEntity file : listFiles){
+            if (file.getStatus().equals(FileStatus.UPLOADED)){
+                files.add(file);
+            }
+        }
+        return files.stream()
                 .map(file -> new FilesResponse(
                         file.getId(),
                         file.getBucket(),
@@ -93,10 +108,12 @@ public class FileService {
     }
 
     @Transactional()
-    public DownloadResponse downloadFile(UUID fileId)throws ResourceNotFoundException{
+    public DownloadResponse downloadFile(UUID fileId, UUID userId)throws ResourceNotFoundException{
         FileEntity file = storageRepository.findById(fileId).orElseThrow(() ->
                 new ResourceNotFoundException("Archivo no encontrado")
         );
+
+        filePermissionService.checkOwnership(file, userId);
 
         String downloadUrl = s3StorageProvider.generateDownloadUrl(file);
 
@@ -108,6 +125,74 @@ public class FileService {
                 downloadUrl
         );
 
+    }
+
+    @Transactional
+    public void confirmUploadFile(UUID fileId, UUID userId){
+
+        FileEntity file = storageRepository.findById(fileId).orElseThrow( () ->
+                new ResourceNotFoundException("Archivo no encontrado"));
+
+        filePermissionService.checkOwnership(file, userId);
+
+        file.setStatus(FileStatus.UPLOADED);
+
+        storageRepository.save(file);
+    }
+
+    @Transactional
+    public void deleteFile(UUID fileId, UUID userId){
+        FileEntity file = storageRepository.findById(fileId).orElseThrow( () ->
+                new ResourceNotFoundException("Archivo no encontrado"));
+
+        filePermissionService.checkOwnership(file, userId);
+
+        if (s3StorageProvider.exists(file)){
+            s3StorageProvider.delete(file);
+        }
+
+        storageRepository.delete(file);
+    }
+
+    @Transactional
+    public void updateVisibilityPublicFile(UUID fileId, UUID userId){
+        FileEntity file = storageRepository.findById(fileId).orElseThrow( () ->
+                new ResourceNotFoundException("Archivo no encontrado"));
+
+        filePermissionService.checkIsOwer(file, userId);
+
+        file.setVisibility(FileVisibility.PUBLIC);
+
+        if (file.getShareToken() == null){
+            file.setShareToken(
+                    UUID.randomUUID().toString().replace("-", "")
+            );
+        }
+
+        storageRepository.save(file);
+    }
+
+    public String downloadFilePublic(String token){
+        FileEntity file = storageRepository.findByShareToken(token)
+                .orElseThrow(() -> new ResourceNotFoundException("Archivo no encontrado"));
+
+        if (file.getVisibility() != FileVisibility.PUBLIC){
+            throw new ForbiddenException("Este archivo no es publico");
+        }
+
+        return s3StorageProvider.generateDownloadUrl(file);
+    }
+
+    public String getShareLink(UUID fileId, UUID userId){
+        FileEntity file = storageRepository.findById(fileId).orElseThrow( () ->
+                new ResourceNotFoundException("Archivo no encontrado"));
+
+        filePermissionService.checkIsOwer(file, userId);
+
+        if (file.getVisibility() != FileVisibility.PUBLIC){
+            updateVisibilityPublicFile(fileId, userId);
+        }
+        return "http://localhost:8080/file-store/api/v1/files/share/" + file.getShareToken();
     }
 
     private String getExtension(String fileName) {

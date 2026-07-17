@@ -4,9 +4,8 @@ import com.backend.storage_service.config.StorageProperties;
 import com.backend.storage_service.storage.model.FileEntity;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.*;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
@@ -73,11 +72,36 @@ public class S3StorageProvider implements StorageProvider {
 
     @Override
     public void delete(FileEntity file) {
+        DeleteObjectRequest request = DeleteObjectRequest.builder()
+                .bucket(storageProperties.getBucket())
+                .key(file.getObjectKey())
+                .build();
 
+        s3Client.deleteObject(request);
     }
 
     @Override
     public boolean exists(FileEntity file) {
-        return false;
+        try {
+
+            HeadObjectRequest request = HeadObjectRequest.builder()
+                    .bucket(storageProperties.getBucket())
+                    .key(file.getObjectKey())
+                    .build();
+
+            s3Client.headObject(request);
+
+            return true;
+
+        } catch (NoSuchKeyException e) {
+            return false;
+        } catch (S3Exception e) {
+
+            if (e.statusCode() == 404) {
+                return false;
+            }
+
+            throw e;
+        }
     }
 }
