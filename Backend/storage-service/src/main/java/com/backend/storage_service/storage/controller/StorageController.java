@@ -1,0 +1,77 @@
+package com.backend.storage_service.storage.controller;
+
+import com.backend.storage_service.storage.dto.DownloadResponse;
+import com.backend.storage_service.storage.dto.FilesResponse;
+import com.backend.storage_service.storage.dto.UploadRequest;
+import com.backend.storage_service.storage.dto.UploadResponse;
+import com.backend.storage_service.storage.service.FileService;
+import com.backend.storage_service.utils.ApiResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.UUID;
+
+@RestController
+@RequestMapping("/file-store/api/v1/files")
+public class StorageController {
+
+    private final FileService fileService;
+
+    public StorageController(FileService fileService) {
+        this.fileService = fileService;
+    }
+
+    @PostMapping("/upload-request")
+    public ResponseEntity<?> UploadFileRequest(
+            HttpServletRequest servletRequest,
+            @RequestBody UploadRequest uploadRequest
+    ){
+        UUID userId = (UUID) servletRequest.getAttribute("userId");
+
+        UploadResponse response = fileService.uploadFile(uploadRequest, userId);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+                new ApiResponse<>(
+                        true,
+                        "Url generada correctamente",
+                        response
+                ));
+    }
+
+    @GetMapping()
+    public ResponseEntity<?> getAllFilesByUser(
+            HttpServletRequest servletRequest
+    ){
+        UUID userId = (UUID) servletRequest.getAttribute("userId");
+
+        List<FilesResponse> filesResponses = fileService.getAllFilesByUser(userId);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+                new ApiResponse<>(
+                        true,
+                        "Archivos encontrados",
+                        filesResponses
+                ));
+    }
+
+    @GetMapping("/{id}/download")
+    public ResponseEntity<?> downloadFile(
+            @PathVariable String id,
+            HttpServletRequest servletRequest
+    ){
+        UUID userId = (UUID) servletRequest.getAttribute("userId");
+        UUID fileId = UUID.fromString(id);
+
+        DownloadResponse downloadResponse = fileService.downloadFile(fileId);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+                new ApiResponse<>(
+                        true,
+                        "Archivos encontrados",
+                        downloadResponse
+                ));
+    }
+}
