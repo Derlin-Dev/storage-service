@@ -39,7 +39,6 @@ public class SecurityConfig {
                         .requestMatchers("/file-store/api/v1/auth/login").permitAll()
                         .requestMatchers("/file-store/api/v1/auth/signup").permitAll()
                         .requestMatchers(HttpMethod.GET, "/file-store/api/v1/files/share/**").permitAll()
-                        .requestMatchers("/file-store/api/v1/debug/**").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .anyRequest().authenticated()
                 )
