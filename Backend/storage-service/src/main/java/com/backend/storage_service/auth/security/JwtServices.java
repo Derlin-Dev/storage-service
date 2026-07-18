@@ -55,8 +55,16 @@ public class JwtServices {
     }
 
     public boolean isTokenValid(String token, UserDetails userDetails) {
-        String username = extractUsername(token);
-        Date expiration = extractAllClaims(token).getExpiration();
-        return username.equals(userDetails.getUsername()) && expiration.after(new Date());
+        try {
+            String username = extractUsername(token);
+            Date expiration = extractAllClaims(token).getExpiration();
+            boolean isUsernameMatch = username.equals(userDetails.getUsername());
+            boolean isNotExpired = expiration.after(new Date());
+            System.out.println("JWT Validation - Username match: " + isUsernameMatch + ", Not expired: " + isNotExpired + ", Username: " + username);
+            return isUsernameMatch && isNotExpired;
+        } catch (Exception e) {
+            System.out.println("JWT Validation Error: " + e.getMessage());
+            return false;
+        }
     }
 }

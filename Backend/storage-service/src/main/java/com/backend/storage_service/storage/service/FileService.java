@@ -26,7 +26,7 @@ public class FileService {
     @Value("${storage.bucket}")
     private String bucket;
 
-    @Value(("${app.base-url"))
+    @Value(("${app.base-url}"))
     private String baseUrl;
 
     @Value("${app.frontend-url}")

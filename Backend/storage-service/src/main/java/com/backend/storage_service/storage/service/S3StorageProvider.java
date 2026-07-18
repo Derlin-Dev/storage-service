@@ -28,7 +28,7 @@ public class S3StorageProvider implements StorageProvider {
 
     @Override
     public String generateUploadUrl(FileEntity file) {
-
+        System.out.println("CONTENT TYPE: " + file.getContentType());
         PutObjectRequest objectRequest = PutObjectRequest.builder()
                 .bucket(storageProperties.getBucket())
                 .key(file.getObjectKey())
