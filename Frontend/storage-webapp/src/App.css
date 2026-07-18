@@ -220,3 +220,55 @@ button:disabled {
     align-items: flex-start;
   }
 }
+
+/* ── Compartir (agregado) ────────────────────────────── */
+.file-item-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.danger-btn {
+  border: 1px solid #e5484d;
+  color: #e5484d;
+  background: transparent;
+  border-radius: 8px;
+  padding: 0.5rem 0.9rem;
+  cursor: pointer;
+}
+
+.dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.dialog-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  width: min(480px, 90vw);
+  max-height: 85vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.share-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.share-link-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.share-link-row input {
+  flex: 1;
+}
