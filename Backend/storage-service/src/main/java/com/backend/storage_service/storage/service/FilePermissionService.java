@@ -1,13 +1,11 @@
 package com.backend.storage_service.storage.service;
 
 import com.backend.storage_service.exception.ForbiddenException;
-import com.backend.storage_service.exception.UnauthorizedException;
 import com.backend.storage_service.storage.model.FileEntity;
 import com.backend.storage_service.storage.model.FileVisibility;
 import com.backend.storage_service.storage.repository.FilePermissionRepository;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
 import java.util.UUID;
 
 @Service
@@ -43,7 +41,7 @@ public class FilePermissionService {
         }
     }
 
-    public void checkIsOwer(FileEntity file, UUID userId){
+    public void checkIsOwner(FileEntity file, UUID userId){
         if (!file.getUploadedBy().getId().equals(userId)) {
             throw new ForbiddenException("Solo el dueño del archivo puede realizar esta acción");
         }

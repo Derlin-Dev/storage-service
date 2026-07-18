@@ -1,15 +1,14 @@
 package com.backend.storage_service.storage.controller;
 
-import com.backend.storage_service.storage.dto.DownloadResponse;
-import com.backend.storage_service.storage.dto.FilesResponse;
-import com.backend.storage_service.storage.dto.UploadRequest;
-import com.backend.storage_service.storage.dto.UploadResponse;
+import com.backend.storage_service.storage.dto.*;
 import com.backend.storage_service.storage.service.FileService;
 import com.backend.storage_service.utils.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.backend.storage_service.storage.dto.GrantAccessRequest;
+import com.backend.storage_service.storage.dto.SharedUserResponse;
 
 import java.net.URI;
 import java.util.List;
@@ -102,7 +101,7 @@ public class StorageController {
         UUID fileId = UUID.fromString(id);
 
         fileService.deleteFile(fileId, userId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(
                 new ApiResponse<>(
                         true,
                         "Archivo eliminado correctamente",
@@ -119,7 +118,7 @@ public class StorageController {
         UUID fileId = UUID.fromString(id);
 
         fileService.updateVisibilityPublicFile(fileId, userId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(
+        return ResponseEntity.status(HttpStatus.OK).body(
                 new ApiResponse<>(
                         true,
                         "Visibilidad del documento actualizada",
@@ -137,10 +136,10 @@ public class StorageController {
 
         String url = fileService.getShareLink(fileId, userId);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(
+        return ResponseEntity.status(HttpStatus.OK).body(
                 new ApiResponse<>(
                         true,
-                        "Visibilidad del documento actualizada",
+                        "Url publica creada correctamente",
                         url
                 ));
     }
@@ -150,5 +149,40 @@ public class StorageController {
         return ResponseEntity.status(HttpStatus.FOUND)
                 .location(URI.create(fileService.downloadFilePublic(token)))
                 .build();
+    }
+
+    @PostMapping("/{id}/share-with")
+    public ResponseEntity<?> grantAccess(
+            @PathVariable String id,
+            @RequestBody GrantAccessRequest request,
+            HttpServletRequest servletRequest
+    ){
+        UUID userId = (UUID) servletRequest.getAttribute("userId");
+        String link = fileService.grantAccess(UUID.fromString(id), userId, request.getEmail());
+
+        return ResponseEntity.ok(new ApiResponse<>(true, "Acceso otorgado", link));
+    }
+
+    @DeleteMapping("/{id}/share-with/{granteeUserId}")
+    public ResponseEntity<?> revokeAccess(
+            @PathVariable String id,
+            @PathVariable String granteeUserId,
+            HttpServletRequest servletRequest
+    ){
+        UUID userId = (UUID) servletRequest.getAttribute("userId");
+        fileService.revokeAccess(UUID.fromString(id), userId, UUID.fromString(granteeUserId));
+
+        return ResponseEntity.ok(new ApiResponse<>(true, "Acceso revocado", null));
+    }
+
+    @GetMapping("/{id}/shared-with")
+    public ResponseEntity<?> getUsersWithAccess(
+            @PathVariable String id,
+            HttpServletRequest servletRequest
+    ){
+        UUID userId = (UUID) servletRequest.getAttribute("userId");
+        List<SharedUserResponse> users = fileService.getUsersWithAccess(UUID.fromString(id), userId);
+
+        return ResponseEntity.ok(new ApiResponse<>(true, "Usuarios con acceso", users));
     }
 }

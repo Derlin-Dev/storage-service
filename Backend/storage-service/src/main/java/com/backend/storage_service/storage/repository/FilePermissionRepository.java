@@ -4,6 +4,7 @@ import com.backend.storage_service.storage.model.FilePermissionEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.UUID;
 
 @Repository
@@ -11,4 +12,6 @@ public interface FilePermissionRepository extends JpaRepository<FilePermissionEn
 
     boolean existsByFileIdAndUserId(UUID fileId, UUID userId);
     void deleteByFileIdAndUserId(UUID fileId, UUID userId);
+    List<FilePermissionEntity> findAllByFileId(UUID fileId);
+    long countByFileId(UUID fileId);
 }
