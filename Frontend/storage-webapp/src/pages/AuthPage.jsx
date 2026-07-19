@@ -44,91 +44,316 @@ export function AuthPage() {
   }
 
   return (
-    <main className="app-shell">
-      <section className="hero-card">
-        <div>
-          <p className="eyebrow">Storage Service</p>
-          <h1>Gestiona tus archivos con autenticación y enlaces de subida/descarga.</h1>
-          <p className="hero-copy">
-            Registra usuarios, inicia sesión y gestiona archivos desde un panel simple conectado con el flujo de S3/MinIO.
-          </p>
-        </div>
-        <div className="hero-badge">API ready</div>
-      </section>
 
-      <section className="panel auth-panel">
-        <div className="panel-heading">
-          <div>
-            <p className="eyebrow">Acceso</p>
-            <h2>{authMode === 'login' ? 'Iniciar sesión' : 'Crear cuenta'}</h2>
-          </div>
-          <div className="toggle-group" role="tablist" aria-label="Modo de autenticación">
-            <button
-              type="button"
-              className={authMode === 'login' ? 'toggle active' : 'toggle'}
-              onClick={() => setAuthMode('login')}
-            >
-              Login
-            </button>
-            <button
-              type="button"
-              className={authMode === 'signup' ? 'toggle active' : 'toggle'}
-              onClick={() => setAuthMode('signup')}
-            >
-              Signup
-            </button>
-          </div>
-        </div>
+<main className="auth-page">
 
-        {redirectTo !== '/' && (
-          <p className="section-copy">
-            Inicia sesión para continuar — te llevaremos de regreso a lo que estabas viendo.
-          </p>
-        )}
 
-        <form onSubmit={handleSubmit} className="stacked-form">
-          {authMode === 'signup' && (
-            <label>
-              <span>Nombre</span>
-              <input
-                type="text"
-                value={form.name ?? ''}
-                onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
-                placeholder="Tu nombre"
-                required
-              />
-            </label>
-          )}
+  <section className="auth-brand">
+
+
+    <p className="eyebrow">
+      STORAGE SERVICE
+    </p>
+
+
+    <h1>
+      Tus archivos,
+      siempre disponibles.
+    </h1>
+
+
+    <p className="hero-copy">
+
+      Guarda, comparte y administra
+      tus archivos desde cualquier lugar.
+
+    </p>
+
+
+
+    <div className="auth-features">
+
+
+      <div>
+        📂
+        <span>
+          Almacenamiento seguro
+        </span>
+      </div>
+
+
+      <div>
+        🔗
+        <span>
+          Comparte archivos fácilmente
+        </span>
+      </div>
+
+
+      <div>
+        🔒
+        <span>
+          Acceso protegido
+        </span>
+      </div>
+
+
+    </div>
+
+
+  </section>
+
+
+
+
+
+  <section className="auth-card">
+
+
+    <div className="panel-heading">
+
+
+      <div>
+
+        <p className="eyebrow">
+          Cuenta
+        </p>
+
+
+        <h2>
+          {
+            authMode === 'login'
+            ? 'Iniciar sesión'
+            : 'Crear cuenta'
+          }
+        </h2>
+
+      </div>
+
+
+
+      <div className="toggle-group">
+
+
+        <button
+
+          type="button"
+
+          className={
+            authMode === 'login'
+            ? 'toggle active'
+            : 'toggle'
+          }
+
+          onClick={() => setAuthMode('login')}
+
+        >
+          Login
+
+        </button>
+
+
+
+        <button
+
+          type="button"
+
+          className={
+            authMode === 'signup'
+            ? 'toggle active'
+            : 'toggle'
+          }
+
+          onClick={() => setAuthMode('signup')}
+
+        >
+
+          Registro
+
+        </button>
+
+
+
+      </div>
+
+
+    </div>
+
+
+
+
+    {
+      redirectTo !== '/' && (
+
+        <p className="section-copy">
+
+          Inicia sesión para continuar.
+
+        </p>
+
+      )
+    }
+
+
+
+
+
+    <form
+
+      onSubmit={handleSubmit}
+
+      className="stacked-form"
+
+    >
+
+
+      {
+        authMode === 'signup' && (
 
           <label>
-            <span>Correo electrónico</span>
+
+            Nombre
+
             <input
-              type="email"
-              value={form.email ?? ''}
-              onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))}
-              placeholder="usuario@correo.com"
+
+              type="text"
+
+              value={form.name}
+
+              onChange={
+                e =>
+                setForm({
+                  ...form,
+                  name:e.target.value
+                })
+              }
+
+              placeholder="Tu nombre"
+
               required
+
             />
+
           </label>
 
-          <label>
-            <span>Contraseña</span>
-            <input
-              type="password"
-              value={form.pass ?? ''}
-              onChange={(event) => setForm((current) => ({ ...current, pass: event.target.value }))}
-              placeholder="••••••"
-              required
-            />
-          </label>
+        )
+      }
 
-          <button type="submit" className="primary-btn" disabled={loading}>
-            {loading ? 'Procesando...' : authMode === 'login' ? 'Ingresar' : 'Registrar'}
-          </button>
-        </form>
-      </section>
 
-      {message.text && <div className={`message ${message.type}`}>{message.text}</div>}
-    </main>
-  )
+
+
+      <label>
+
+        Correo electrónico
+
+
+        <input
+
+          type="email"
+
+          value={form.email}
+
+          onChange={
+            e =>
+            setForm({
+              ...form,
+              email:e.target.value
+            })
+          }
+
+
+          placeholder="correo@ejemplo.com"
+
+          required
+
+        />
+
+
+      </label>
+
+
+
+
+
+      <label>
+
+        Contraseña
+
+
+        <input
+
+          type="password"
+
+          value={form.pass}
+
+          onChange={
+            e =>
+            setForm({
+              ...form,
+              pass:e.target.value
+            })
+          }
+
+
+          placeholder="••••••••"
+
+          required
+
+        />
+
+
+      </label>
+
+
+
+
+
+      <button
+
+        className="primary-btn"
+
+        disabled={loading}
+
+      >
+
+        {
+          loading
+          ? "Procesando..."
+          :
+          authMode === 'login'
+          ? "Ingresar"
+          : "Crear cuenta"
+        }
+
+
+      </button>
+
+
+
+    </form>
+
+
+
+
+    {
+      message.text && (
+
+        <div className={`message ${message.type}`}>
+
+          {message.text}
+
+        </div>
+
+      )
+    }
+
+
+
+  </section>
+
+
+
+</main>
+
+)
 }

@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { useAuth } from '../context/AuthContext.jsx'
 import { ShareDialog } from '../components/ShareDialog.jsx'
+import { UploadBox } from '../components/files/UploadBox.jsx'
+import { FileGrid } from '../components/files/FileGrid.jsx'
 import {
   confirmUpload,
   deleteFile as deleteFileRequest,
@@ -118,77 +120,140 @@ export function DashboardPage() {
   }
 
   return (
-    <main className="app-shell">
-      <section className="panel files-panel">
-        <div className="panel-heading">
-          <div>
-            <p className="eyebrow">Archivos</p>
-            <h2>Operaciones de almacenamiento</h2>
-          </div>
-          <button type="button" className="secondary-btn" onClick={logout}>
-            Cerrar sesión
-          </button>
-        </div>
 
-        <form onSubmit={handleUpload} className="upload-card">
-          <div>
-            <p className="section-title">Subir archivo</p>
-            <p className="section-copy">Se solicita una URL al backend y luego se sube al servicio de almacenamiento.</p>
-          </div>
-          <label className="file-picker">
-            <span>{selectedFile ? selectedFile.name : 'Selecciona un archivo'}</span>
-            <input
-              ref={fileInputRef}
-              type="file"
-              onChange={(event) => setSelectedFile(event.target.files?.[0] || null)}
-            />
-          </label>
-          <button type="submit" className="primary-btn" disabled={loading}>
-            {loading ? 'Subiendo...' : 'Subir archivo'}
-          </button>
-        </form>
+  <main className="dashboard">
 
-        <div className="files-list-card">
-          <div className="list-header">
-            <p className="section-title">Archivos del usuario</p>
-            <button type="button" className="secondary-btn" onClick={loadFiles} disabled={loading}>
-              Refrescar
-            </button>
-          </div>
 
-          {files.length === 0 ? (
-            <div className="empty-state">Aún no hay archivos para mostrar.</div>
-          ) : (
-            <ul className="file-list">
-              {files.map((file) => (
-                <li key={file.id} className="file-item">
-                  <div>
-                    <strong>{file.originalName}</strong>
-                    <p>
-                      {file.contentType} · {formatBytes(file.size)} · {file.createdAt?.slice(0, 10) || '—'}
-                    </p>
-                  </div>
-                  <div className="file-item-actions">
-                    <button type="button" className="secondary-btn" onClick={() => setShareTarget(file)}>
-                      Compartir
-                    </button>
-                    <button type="button" className="secondary-btn" onClick={() => handleDownload(file)}>
-                      Descargar
-                    </button>
-                    <button type="button" className="danger-btn" onClick={() => handleDelete(file)}>
-                      Eliminar
-                    </button>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      </section>
+   <section className="dashboard-header">
 
-      {message.text && <div className={`message ${message.type}`}>{message.text}</div>}
 
-      {shareTarget && <ShareDialog file={shareTarget} onClose={() => setShareTarget(null)} />}
-    </main>
+      <div className="dashboard-title">
+
+
+        <p className="eyebrow">
+          STORAGE
+        </p>
+
+
+        <h1>
+          Mis archivos
+        </h1>
+
+
+        <p className="section-copy">
+          Administra tus documentos almacenados en la nube.
+        </p>
+
+
+      </div>
+
+    </section>
+
+
+
+
+    <UploadBox
+
+      selectedFile={selectedFile}
+
+      setSelectedFile={setSelectedFile}
+
+      fileInputRef={fileInputRef}
+
+      onUpload={handleUpload}
+
+      loading={loading}
+
+    />
+
+
+
+
+
+    <section>
+
+
+      <div className="panel-heading">
+
+
+        <h2>
+          Archivos recientes
+        </h2>
+
+
+
+        <button
+
+          className="secondary-btn"
+
+          onClick={loadFiles}
+
+          disabled={loading}
+
+        >
+
+          Actualizar
+
+        </button>
+
+
+
+      </div>
+
+
+
+
+      <FileGrid
+
+        files={files}
+
+        onShare={setShareTarget}
+
+        onDownload={handleDownload}
+
+        onDelete={handleDelete}
+
+      />
+
+
+
+    </section>
+
+
+
+
+
+    {
+      message.text &&
+
+      <div className={`message ${message.type}`}>
+
+        {message.text}
+
+      </div>
+
+    }
+
+
+
+
+
+    {
+      shareTarget &&
+
+      <ShareDialog
+
+        file={shareTarget}
+
+        onClose={() => setShareTarget(null)}
+
+      />
+
+    }
+
+    
+
+  </main>
+
   )
 }
