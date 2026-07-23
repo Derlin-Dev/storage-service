@@ -47,22 +47,24 @@ hosts y levanta `docker compose` en un solo paso (ver Makefile en la raíz).
 
 **Variabres de entorno .env**
 
-# --- Postgres ---
+--- Postgres ---
+
 POSTGRES_DB=file_store_db
 POSTGRES_USER=admin
 POSTGRES_PASSWORD=admin123
 
-# --- JWT ---
-# Genera uno nuevo, por ejemplo: openssl rand -hex 32
+--- JWT --- Genera uno nuevo, por ejemplo: openssl rand -hex 32
+
 JWT_SECRET=EJEMPLO_DEL_KEY_LARGA
 JWT_EXPIRATION_MINUTES=60
 
-# --- URLs públicas ---
+--- URLs públicas ---
+
 APP_BASE_URL=http://localhost:8080
 APP_FRONTEND_URL=http://localhost:5173
 
-# --- MinIO / S3 ---
-# "minio" debe existir en tu /etc/hosts apuntando a 127.0.0.1
+--- MinIO / S3 --- minio" debe existir en tu /etc/hosts apuntando a 127.0.0.1
+
 STORAGE_ENDPOINT=http://minio:9000
 STORAGE_REGION=us-east-1
 STORAGE_BUCKET=files
