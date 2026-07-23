@@ -2,6 +2,9 @@
 
 > 🚧 **Proyecto en desarrollo activo.** El flujo principal (auth, subida, descarga, link público y compartir con usuarios específicos) ya funciona de punta a punta. Quedan pendientes de limpieza menores — ver [Pendientes de limpieza](#pendientes-de-limpieza).
 
+**NOTA**
+Revisa el README-docker.md para mas informacion sobre como correr la aplicacion!!
+
 Servicio de almacenamiento de archivos con backend en **Spring Boot** y frontend en **React**. Permite a usuarios autenticados subir, listar, descargar y compartir archivos — de forma pública (con link) o protegida (solo para usuarios específicos) — delegando el almacenamiento real a un backend compatible con S3 (AWS S3 o MinIO) mediante **URLs firmadas (presigned URLs)**.
 
 ## Arquitectura
@@ -107,6 +110,36 @@ npm run dev
 Arranca en `http://localhost:5173`, con el proxy hacia el backend ya configurado — **no hace falta ninguna variable de entorno adicional** en desarrollo local.
 
 > **Nota:** `npm run build` solo genera los archivos estáticos de producción — no levanta el proxy ni ningún servidor. Para desarrollar y probar el flujo completo (login, subida, compartir), siempre usa `npm run dev`.
+
+## Docker
+
+Todo el stack (backend, frontend, PostgreSQL y MinIO) también se puede levantar con un solo comando usando Docker Compose — ver **[README-docker.md](./README-docker.md)** para la guía completa, incluyendo un paso de configuración de red necesario para que las URLs firmadas de MinIO funcionen correctamente.
+
+```bash
+cp .env.example .env   # y define al menos JWT_SECRET
+make up                 # o: docker compose up --build
+```
+
+## Generar ejecutables (sin Docker)
+
+Si prefieres correr los artefactos compilados directamente en tu máquina, sin Docker ni los comandos de desarrollo (`spring-boot:run` / `npm run dev`):
+
+**Backend** — genera un jar autocontenido (con servidor embebido):
+```bash
+cd Backend/storage-service
+./mvnw clean package -DskipTests
+java -jar target/storage-service-0.0.1-SNAPSHOT.jar
+```
+
+**Frontend** — genera los archivos estáticos de producción en `dist/` (necesitan un servidor web para servirse, no son un ejecutable por sí solos):
+```bash
+cd Frontend/storage-webapp
+npm install
+npm run build
+npx serve dist -l 5173   # o servirlos con Nginx/Apache/etc.
+```
+
+En ambos casos, sin Docker de por medio, necesitas PostgreSQL y MinIO accesibles en los endpoints configurados en `application.properties` (por defecto, `localhost`).
 
 ## Documentación de la API
 
